@@ -3,6 +3,7 @@ using CloudMailGhost.Desktop.Singletones;
 using CloudMailGhost.Desktop.Views;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,6 +20,7 @@ namespace CloudMailGhost.Desktop.ViewModels
         public ICommand OpenCommand { get; } 
 
         private string filePath = "";
+        private bool isDecoded = false;
 
         public FileItemViewModel() { OpenCommand = new RelayCommand(OpenFile); }
 
@@ -31,7 +33,27 @@ namespace CloudMailGhost.Desktop.ViewModels
             nameSplit = nameSplit[nameSplit.Length - 1].Split('/');
 
             DisplayName = nameSplit[nameSplit.Length - 1];
-            Status = "Статус не указан";
+            
+
+            var cachedFile = DecodeCacheManager.CheckForFile(DisplayName);
+            if (cachedFile != null)
+            {
+                isDecoded = true;
+                filePath = cachedFile;
+
+                Description = "Извлечён из: " + DisplayName;
+
+                nameSplit = filePath.Split('\\');
+                nameSplit = nameSplit[nameSplit.Length - 1].Split('/');
+                DisplayName = nameSplit[nameSplit.Length - 1];
+
+                Status = "Скачан";
+            }
+            else
+            {
+                Status = "Новый";
+                Description = "В нём что-то есть";
+            }
 
             // TODO: если файл уже дешифрован, обозначить это и открывать иначе
         }
@@ -40,7 +62,8 @@ namespace CloudMailGhost.Desktop.ViewModels
         {
             try
             {
-                MessageDecoder.OpenMessage(filePath);
+                if (!isDecoded) MessageDecoder.OpenMessage(filePath, DisplayName);
+                else Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
             }
             catch (Exception ex)
             {

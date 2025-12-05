@@ -9,7 +9,7 @@ namespace CloudMailGhost.Desktop.Singletones
 {
     internal class MessageDecoder
     {
-        internal static void OpenMessage(string filename)
+        internal static void OpenMessage(string filename, string pngName)
         {
             var image = ImageLoader.LoadImageFromFile(filename);
             var data = ImageEncoder.DecodeDataV1(image, Config.Key);
@@ -20,8 +20,12 @@ namespace CloudMailGhost.Desktop.Singletones
             int sizeContents = BitConverter.ToInt32(data.Skip(4 + sizeName).Take(4).ToArray(), 0);
             byte[] fileContents = data.Skip(8 + sizeName).Take(sizeContents).ToArray();
 
-            File.WriteAllBytes(Config.PathToDownloads + "/" + fileDecodedName, fileContents);
-            Process.Start(new ProcessStartInfo(Config.PathToDownloads + "/" + fileDecodedName) { UseShellExecute = true });
+            var decodedFilePath = Config.PathToDownloads + "/" + fileDecodedName;
+            File.WriteAllBytes(decodedFilePath, fileContents);
+
+            DecodeCacheManager.SetForFile(pngName, decodedFilePath);
+
+            Process.Start(new ProcessStartInfo(decodedFilePath) { UseShellExecute = true });
         }
     }
 }

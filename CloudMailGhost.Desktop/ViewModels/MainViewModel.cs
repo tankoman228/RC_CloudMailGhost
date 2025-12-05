@@ -118,7 +118,7 @@ public class MainViewModel : ViewModelBase
             var selectedFolder = folders[0];
             var folderPath = selectedFolder.Path.AbsolutePath;
 
-            Config.PathToIO = folderPath;
+            Config.PathToIO = Uri.UnescapeDataString(folderPath);
             Config.Save();
         }        
     }
@@ -141,7 +141,7 @@ public class MainViewModel : ViewModelBase
             var selectedFolder = folders[0];
             var folderPath = selectedFolder.Path.AbsolutePath;
 
-            Config.PathToFake = folderPath;
+            Config.PathToFake = Uri.UnescapeDataString(folderPath);
             Config.Save();
         }
     }
@@ -162,7 +162,7 @@ public class MainViewModel : ViewModelBase
         if (folders.Any())
         {
             var selectedFolder = folders[0];
-            var folderPath = selectedFolder.Path.AbsolutePath;
+            var folderPath = Uri.UnescapeDataString(selectedFolder.Path.AbsolutePath);
 
             Config.PathToDownloads = folderPath;
             Config.Save();
@@ -217,16 +217,18 @@ public class MainViewModel : ViewModelBase
             };
 
             var files2 = await storageProvider.OpenFilePickerAsync(options);
-            if (files.Count != 1) return;
+            if (files2.Count != 1) return;
             var selectedFileToHide = files2[0];
 
-            await MessageEncoder.Encode(selectedFileToHide.Path.AbsolutePath, selectedFileToEncode.Path.AbsolutePath);
+            await MessageEncoder.Encode(Uri.UnescapeDataString(selectedFileToHide.Path.AbsolutePath), Uri.UnescapeDataString(selectedFileToEncode.Path.AbsolutePath));
         }
         catch (Exception ex)
         {
             MainWindow.Instance.ShowError(ex);
         }
     }
+
+
 
     #endregion
 }

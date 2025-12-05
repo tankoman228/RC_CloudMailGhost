@@ -36,24 +36,27 @@
                 Зашифровать и отправить
             </Button>
         </Grid>
-        <DataGrid Grid.Row="2" Margin="15" ItemsSource="{Binding Files}" AutoGenerateColumns="False">
-			<DataGrid.Columns>
-				<DataGridTextColumn 
-                    Header="Файл"
-                    Binding="{Binding DisplayName}"></DataGridTextColumn>
-				<DataGridTextColumn 
-                    Header="Статус"
-                    Binding="{Binding Status}"></DataGridTextColumn>
-				<DataGridTextColumn 
-                    Header="Описание"
-                    Binding="{Binding Description}"></DataGridTextColumn>
-                <DataGridTemplateColumn Header="Действия">
-					<DataTemplate>
-						<Button Command="{Binding OpenCommand}" Content="Открыть" />
-                    </DataTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+
+        <Border Grid.Row="2" Margin="15" BorderThickness="3" BorderBrush="White">
+			<DataGrid ItemsSource="{Binding Files}" AutoGenerateColumns="False">
+			    <DataGrid.Columns>
+				    <DataGridTextColumn 
+                        Header="Файл"
+                        Binding="{Binding DisplayName}"></DataGridTextColumn>
+				    <DataGridTextColumn 
+                        Header="Статус"
+                        Binding="{Binding Status}"></DataGridTextColumn>
+				    <DataGridTextColumn 
+                        Header="Описание"
+                        Binding="{Binding Description}"></DataGridTextColumn>
+                    <DataGridTemplateColumn Header="Действия">
+					    <DataTemplate>
+						    <Button Command="{Binding OpenCommand}" Content="Открыть" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>        
 
         <ProgressBar Grid.Row="3" Margin="15,-10,15,3"
                      Minimum="0"
