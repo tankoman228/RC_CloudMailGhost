@@ -13,7 +13,7 @@
     <vm:MainViewModel />
     </Design.DataContext>
    
-    <Grid RowDefinitions="auto,auto,*">
+    <Grid RowDefinitions="auto,auto,*,auto">
         <Menu Grid.Row="0">
 			<MenuItem Header="Настройки">
                 <MenuItem Command="{Binding CommandSelectKey}" Header="Выбрать ключ шифрования (любой файл до 1 КБ)" />
@@ -49,5 +49,12 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+
+        <ProgressBar Grid.Row="3" Margin="15,-10,15,3"
+                     Minimum="0"
+                     Maximum="100"
+                     Value="{Binding Progress}">
+			
+        </ProgressBar>
     </Grid>
 </UserControl>

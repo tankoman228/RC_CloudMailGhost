@@ -30,4 +30,10 @@
   <ItemGroup>
     <ProjectReference Include="..\CloudMailGhost.Lib\CloudMailGhost.Lib.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Update="Assets\Logo.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+  </ItemGroup>
 </Project>

@@ -22,4 +22,10 @@
   <ItemGroup>
     <ProjectReference Include="..\CloudMailGhost.Desktop\CloudMailGhost.Desktop.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets\for_teapots.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

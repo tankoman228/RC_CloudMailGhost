@@ -4,6 +4,7 @@ using CloudMailGhost.Desktop.Singletones;
 using CloudMailGhost.Desktop.Views;
 using DynamicData;
 using MsBox.Avalonia.ViewModels.Commands;
+using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -16,7 +17,7 @@ namespace CloudMailGhost.Desktop.ViewModels;
 public class MainViewModel : ViewModelBase
 {
     public ObservableCollection<FileItemViewModel> Files { get; } = [];
-
+    public static MainViewModel Instance;
     public ICommand CommandSelectKey { get; }
     public ICommand CommandSelectIO { get; }
     public ICommand CommandSelectFake { get; }
@@ -42,9 +43,14 @@ public class MainViewModel : ViewModelBase
                 await Task.Delay(5000);            
             } while (_target != null);
         });
+
+        Instance = this;
     }
 
     private MainWindow _target => MainWindow.Instance;
+
+    public float Progress { get => progress; set => this.RaiseAndSetIfChanged(ref progress, value); }
+    private float progress;
 
     private void RescanFiles()
     {
@@ -53,12 +59,7 @@ public class MainViewModel : ViewModelBase
             Files.Clear();
             Files.AddRange(Directory.EnumerateFiles(Config.PathToIO).Where(x => x.EndsWith(".png")).Select(y => new FileItemViewModel(y)));
         }
-        catch (Exception ex)
-        {
-
-        }
-
-        // TODO: заполнить массив Files
+        catch (Exception ex) {}
     }
 
     #region Commands
@@ -166,7 +167,7 @@ public class MainViewModel : ViewModelBase
 
     private void Help(object _)
     {
-        // TODO: 
+        _target.ShowMessage(File.ReadAllText("Assets/for_teapots.txt"));
     }
 
     private void Debug(object _)
@@ -215,7 +216,7 @@ public class MainViewModel : ViewModelBase
             if (files.Count != 1) return;
             var selectedFileToHide = files2[0];
 
-            MessageEncoder.Encode(selectedFileToHide.Path.AbsolutePath, selectedFileToEncode.Path.AbsolutePath);
+            await MessageEncoder.Encode(selectedFileToHide.Path.AbsolutePath, selectedFileToEncode.Path.AbsolutePath);
         }
         catch (Exception ex)
         {

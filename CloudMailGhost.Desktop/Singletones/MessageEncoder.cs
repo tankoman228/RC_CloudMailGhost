@@ -1,4 +1,5 @@
-﻿using CloudMailGhost.Lib;
+﻿using CloudMailGhost.Desktop.ViewModels;
+using CloudMailGhost.Lib;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -13,9 +14,11 @@ namespace CloudMailGhost.Desktop.Singletones
 {
     internal class MessageEncoder
     {
-        public static void Encode(string fileFake, string fileReal)
+        public static async Task Encode(string fileFake, string fileReal)
         {
             var fake = ImageLoader.LoadImageFromFile(fileFake);
+
+            if (fake.Height * fake.Width % ImageEncoder.Rarefaction != 0) throw new ArgumentException("Число пикселей должно быть кратно " + ImageEncoder.Rarefaction);
 
             var fileBytes = File.ReadAllBytes(fileReal);
             var fileNameBytes = Encoding.UTF8.GetBytes(Path.GetFileName(fileReal));
@@ -36,8 +39,11 @@ namespace CloudMailGhost.Desktop.Singletones
                 ..new byte[fake.Pixels.Length / ImageEncoder.Rarefaction - toWrite.Length]
             ];
 
-            var resImage = ImageEncoder.EncodeDataV1(fake, Config.Key, toWrite);
-
+            ImageRepresenter resImage = new();         
+            await Task.Run(() => {
+                resImage = ImageEncoder.EncodeDataV1(fake, Config.Key, toWrite, progress => MainViewModel.Instance.Progress = progress);
+            });
+            
             var fn = fileFake.Split("/");
             var ff = fn[fn.Length - 1];
             fn = ff.Split("\\");

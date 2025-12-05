@@ -23,7 +23,7 @@ namespace CloudMailGhost.Lib
         /// <param name="data"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public static ImageRepresenter EncodeDataV1(ImageRepresenter original, string key, byte[] data)
+        public static ImageRepresenter EncodeDataV1(ImageRepresenter original, string key, byte[] data, Action<float> updateProgress)
         {
             if (data.Length != original.Pixels.Length / Rarefaction) throw new ArgumentException();
 
@@ -46,6 +46,8 @@ namespace CloudMailGhost.Lib
                 // Разделяем, какие числа мы хотим закодировать
                 int fragments = encoded / Rarefaction;
                 int gragmentLast = encoded - fragments * (Rarefaction - 1); // целочисленное деление ест дроби
+
+                updateProgress((float)i / (float)original.Pixels.Length * 100f);
 
                 // А далее решаем уравнение
                 void SolveEqualityForFragment(int targetValue)
