@@ -23,10 +23,14 @@ namespace CloudMailGhost.Desktop.ViewModels
         public FileItemViewModel() { OpenCommand = new RelayCommand(OpenFile); }
 
         public FileItemViewModel(string FilePath) : base() {
+
             OpenCommand = new RelayCommand(OpenFile);
             filePath = FilePath;
+            
+            var nameSplit = filePath.Split('\\');
+            nameSplit = nameSplit[nameSplit.Length - 1].Split('/');
 
-            DisplayName = FilePath;
+            DisplayName = nameSplit[nameSplit.Length - 1];
             Status = "Статус не указан";
 
             // TODO: если файл уже дешифрован, обозначить это и открывать иначе

@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using CloudMailGhost.Desktop.Singletones;
 using CloudMailGhost.Desktop.Views;
 using DynamicData;
@@ -39,8 +40,11 @@ public class MainViewModel : ViewModelBase
         Task.Run(async () =>
         {
             do {
-                RescanFiles();
-                await Task.Delay(5000);            
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    RescanFiles();                   
+                });
+                await Task.Delay(5000);
             } while (_target != null);
         });
 

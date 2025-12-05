@@ -36,19 +36,24 @@
                 Зашифровать и отправить
             </Button>
         </Grid>
-        
-		<ListBox Grid.Row="2" Margin="15" ItemsSource="{Binding Files}">
-			<ListBox.ItemTemplate>
-				<DataTemplate>
-					<UniformGrid Columns="4">
-						<TextBlock Text="{Binding DisplayName}" />
-						<TextBlock Text="{Binding Status}" />
-						<TextBlock Text="{Binding Description}" />
+        <DataGrid Grid.Row="2" Margin="15" ItemsSource="{Binding Files}" AutoGenerateColumns="False">
+			<DataGrid.Columns>
+				<DataGridTextColumn 
+                    Header="Файл"
+                    Binding="{Binding DisplayName}"></DataGridTextColumn>
+				<DataGridTextColumn 
+                    Header="Статус"
+                    Binding="{Binding Status}"></DataGridTextColumn>
+				<DataGridTextColumn 
+                    Header="Описание"
+                    Binding="{Binding Description}"></DataGridTextColumn>
+                <DataGridTemplateColumn Header="Действия">
+					<DataTemplate>
 						<Button Command="{Binding OpenCommand}" Content="Открыть" />
-                    </UniformGrid>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+                    </DataTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
 
         <ProgressBar Grid.Row="3" Margin="15,-10,15,3"
                      Minimum="0"
