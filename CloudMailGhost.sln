@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudMailGhost.Lib", "CloudMailGhost.Lib\CloudMailGhost.Lib.csproj", "{443384FF-C4C1-42C9-9D77-EF4D17D2CD71}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudMailGhost.Unit", "CloudMailGhost.Unit\CloudMailGhost.Unit.csproj", "{EFF81A31-50C4-45F0-A9EE-81D081CE03C3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudMailGhost.Desktop", "CloudMailGhost.Desktop\CloudMailGhost.Desktop.csproj", "{8CEEDB54-10FA-4473-A7E2-8F2F2ED3460B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudMailGhost.Desktop.Desktop", "CloudMailGhost.Desktop.Desktop\CloudMailGhost.Desktop.Desktop.csproj", "{FB01B922-03E3-49DA-A373-B0D67538DBF3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{443384FF-C4C1-42C9-9D77-EF4D17D2CD71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{443384FF-C4C1-42C9-9D77-EF4D17D2CD71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{443384FF-C4C1-42C9-9D77-EF4D17D2CD71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{443384FF-C4C1-42C9-9D77-EF4D17D2CD71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFF81A31-50C4-45F0-A9EE-81D081CE03C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFF81A31-50C4-45F0-A9EE-81D081CE03C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFF81A31-50C4-45F0-A9EE-81D081CE03C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFF81A31-50C4-45F0-A9EE-81D081CE03C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CEEDB54-10FA-4473-A7E2-8F2F2ED3460B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CEEDB54-10FA-4473-A7E2-8F2F2ED3460B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CEEDB54-10FA-4473-A7E2-8F2F2ED3460B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CEEDB54-10FA-4473-A7E2-8F2F2ED3460B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB01B922-03E3-49DA-A373-B0D67538DBF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB01B922-03E3-49DA-A373-B0D67538DBF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB01B922-03E3-49DA-A373-B0D67538DBF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB01B922-03E3-49DA-A373-B0D67538DBF3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AEDF1C48-6DC7-426C-9928-E38D3CEC98B8}
+	EndGlobalSection
+EndGlobal

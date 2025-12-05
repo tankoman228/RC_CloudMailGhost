@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:vm="clr-namespace:CloudMailGhost.Desktop.ViewModels"
+                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                x:Class="CloudMailGhost.Desktop.Views.MainView"
+                x:DataType="vm:MainViewModel"
+                Background="LightGray">
+    <Design.DataContext>
+    <!-- This only sets the DataContext for the previewer in an IDE,
+            to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+    <vm:MainViewModel />
+    </Design.DataContext>
+   
+    <Grid RowDefinitions="auto,auto,*">
+        <Menu Grid.Row="0">
+			<MenuItem Header="Настройки">
+                <MenuItem Command="{Binding CommandSelectKey}" Header="Выбрать ключ шифрования (любой файл до 1 КБ)" />
+                <MenuItem Command="{Binding CommandSelectIO}" Header="Выбрать директорию входа-выхода" />
+                <MenuItem Command="{Binding CommandSelectFake}" Header="Выбрать директорию фиктивных файлов (под что маскировать)" />
+                <MenuItem Command="{Binding CommandSelectDownloads}" Header="Выбрать директорию загрузок (куда дешифрованное)" />
+            </MenuItem>
+            <MenuItem Command="{Binding CommandHelp}" Header="Инструкция для чайников" />
+            <MenuItem Command="{Binding CommandDebug}" Header="Отладка" />
+        </Menu>
+
+        <Grid Margin="15" Grid.Row="1">
+			<TextBlock 
+                VerticalAlignment="Center"
+                FontSize="14">Почта:</TextBlock>
+            <Button 
+                HorizontalAlignment="Right"
+                Background="White"
+                Command="{Binding CommandSend}">
+                Зашифровать и отправить
+            </Button>
+        </Grid>
+        
+		<ListBox Grid.Row="2" Margin="15" ItemsSource="{Binding Files}">
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<UniformGrid Columns="4">
+						<TextBlock Text="{Binding DisplayName}" />
+						<TextBlock Text="{Binding Status}" />
+						<TextBlock Text="{Binding Description}" />
+						<Button Command="{Binding OpenCommand}" Content="Открыть" />
+                    </UniformGrid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>
