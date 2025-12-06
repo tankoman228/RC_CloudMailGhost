@@ -15,16 +15,8 @@ namespace CloudMailGhost.Unit
         public void EncodeDecode_V1_ShouldWorkCorrectly()
         {
             string key = "�����";
-            byte[] testData = [ 
-                1, 2, 3, 4, 127, 255, 127, 0, 
-                4, 2, 3, 4, 127, 255, 127, 0, 
-                1, 2, 3, 4, 127, 255, 127, 0, 
-                1, 2, 3, 4, 127, 255, 127, 255, 
-                1, 2, 3, 4, 127, 255, 127, 255, 
-                8, 8, 3, 4, 127, 255, 127, 255, 
-                1, 2, 3, 4, 127, 255, 127, 0,               
-                1, 2, 3, 4, 127, 255, 127, 255               
-            ];
+            byte[] testData = NoiseGenerator.GenerateNoise(new Random(0).Next() + "", 
+                ImageEncoder.Rarefaction * 10, 0, 255, out var s);
 
             int pixelCount = testData.Length * ImageEncoder.Rarefaction;
             var originalPixels = new ImageRepresenter.Pixel[pixelCount];
@@ -40,7 +32,7 @@ namespace CloudMailGhost.Unit
             var originalImage = new ImageRepresenter { Pixels = originalPixels };
 
             // Act - �������� ������
-            var encodedImage = ImageEncoder.EncodeDataV1(originalImage, key, testData);
+            var encodedImage = ImageEncoder.EncodeDataV1(originalImage, key, testData, d => { });
 
             // Act - ���������� ������
             var decodedData = ImageEncoder.DecodeDataV1(encodedImage, key);
@@ -151,7 +143,7 @@ namespace CloudMailGhost.Unit
                 Console.WriteLine($"�������� ������: {BitConverter.ToString(testData.Take(16).ToArray())}...");
 
                 // Act - �������� ������
-                var encodedImage = ImageEncoder.EncodeDataV1(originalImage, key, testData);
+                var encodedImage = ImageEncoder.EncodeDataV1(originalImage, key, testData, d => { });
 
                 // ��������������� ������� ��� ����������
                 encodedImage.Width = originalImage.Width;
