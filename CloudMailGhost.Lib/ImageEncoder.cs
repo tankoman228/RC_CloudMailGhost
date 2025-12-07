@@ -9,11 +9,11 @@ namespace CloudMailGhost.Lib
 
 
         public const int Rarefaction = 10;
-        public const int FragmentValueLimit = 255 / Rarefaction + 4;
-        public const int JijkaMinValue = FragmentValueLimit + 4;
-        public const int ModFragmentKoef = (int)(FragmentValueLimit / 1.5);
+        public const int FragmentValueLimit = 255 / Rarefaction;
+        public const int JijkaMinValue = 30;
+        public const int ModFragmentKoef = (int)(FragmentValueLimit / 3 + 4);
         public const int MinColorDifference = 20;
-        public const int MaxColorDifference = 60;
+        public const int MaxColorDifference = 50;
         public const int RootsToExit = 30;
 
         private static object pixelsReadyLock = new();
@@ -57,9 +57,9 @@ namespace CloudMailGhost.Lib
             var noise = NoiseGenerator.GenerateNoise(
                 $"{key}:{GetSalt(original)}", // в качестве соли: размер картинки
                 original.Pixels.Length,              // генерируем шум для картинки
-                1, 8, // лимиты значений в шуме
+                8, 16, // лимиты значений в шуме
                 out var JijkaRaw);
-            int Jijka = JijkaMinValue + JijkaRaw % 7;
+            int Jijka = JijkaMinValue + JijkaRaw % 31;
 
             // Это у нас будет новая картинка (она размотана в линию)
             ImageRepresenter result = new ImageRepresenter { Pixels = (ImageRepresenter.Pixel[])original.Pixels.Clone() };
@@ -68,7 +68,6 @@ namespace CloudMailGhost.Lib
 
             void ParralelChunk(int pixelStart, int length)
             {
-                Console.WriteLine($"ps: {pixelStart} \tl: {length}");
                 int i = pixelStart; // номер пикселя
 
                 while (i < length)
@@ -132,7 +131,6 @@ namespace CloudMailGhost.Lib
                                 root = new(r, g, b);
                                 res = DecodeEqualityV1(ref root, noise[i], Jijka);
 
-                                //Console.WriteLine($"shuffle bibkus");
                                 h = 0;
                             }
                             else
@@ -311,9 +309,9 @@ namespace CloudMailGhost.Lib
             var noise = NoiseGenerator.GenerateNoise(
                 $"{key}:{GetSalt(message)}", // в качестве соли: размер картинки
                 message.Pixels.Length,            // восстанавилваем шум для картинки
-                1, 8,                             // лимиты значений в шуме
+                8, 16,                             // лимиты значений в шуме
                 out var JijkaRaw);
-            int Jijka = JijkaMinValue + JijkaRaw % 7;
+            int Jijka = JijkaMinValue + JijkaRaw % 31;
 
             byte[] decoded = new byte[message.Pixels.Length / Rarefaction];
 
@@ -343,9 +341,26 @@ namespace CloudMailGhost.Lib
         /// </summary>
         private static int DecodeEqualityV1(ref ImageRepresenter.Pixel original, byte noise, int Jijka)
         {
-            return (original.R % ModFragmentKoef + original.G % ModFragmentKoef + original.B % ModFragmentKoef) % (Jijka + noise);
-        }
+            byte R = original.R;
+            byte G = original.G;
+            byte B = original.B;
 
+            switch (noise % 8)
+            {
+                case 0: R += noise; G += noise; B -= noise; break;
+                case 1: R += noise; G -= noise; B += noise; break;
+                case 2: R += noise; G -= noise; B -= noise; break;
+                case 3: R -= noise; G += noise; B += noise; break;
+                case 4: R -= noise; G += noise; B -= noise; break;
+                case 5: R -= noise; G -= noise; B += noise; break;
+                case 6: R -= noise; G -= noise; B -= noise; break;
+                case 7: R += noise; G += noise; B += noise; break;
+            }
+
+            int Sum = R % ModFragmentKoef + G % ModFragmentKoef + B % ModFragmentKoef;           
+
+            return Sum % (Jijka + noise);
+        }
 
         public static int ColorSumDiff(ref ImageRepresenter.Pixel c1, ref ImageRepresenter.Pixel c2)
         {
