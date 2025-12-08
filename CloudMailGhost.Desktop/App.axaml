@@ -18,6 +18,11 @@
         <FluentTheme />
          <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
 
+        <Style Selector="UserControl">
+             <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+             <Setter Property="FontSize" Value="14"/>       
+        </Style>
+
         <Style Selector="ContentControl">
              <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
         </Style>
@@ -35,6 +40,7 @@
              <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
              <Setter Property="FontSize" Value="14"/>           
         </Style>
+
 
     </Application.Styles>
 </Application>

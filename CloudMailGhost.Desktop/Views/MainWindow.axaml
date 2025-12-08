@@ -9,10 +9,7 @@
         Icon="/Assets/Logo.ico"
         Title="{DynamicResource AppName}">
     <Window.Styles>
-        <Style Selector="Window">
-            <Setter Property="FontFamily" Value="Segoe UI" />
-            <Setter Property="FontSize" Value="12" />
-        </Style>
+
     </Window.Styles>
     <views:MainView />
 </Window>

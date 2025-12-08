@@ -32,15 +32,18 @@ public partial class App : Application
             };
         }
 
-        // Алгоритм не тыкать!
-        var strings = File.ReadAllLines("Localization/" + "ru.txt");
-        for (int i = 2; i < strings.Length; i++)
+        try
         {
-            var key = strings[i++];
-            var value = strings[i++];
-            Application.Current.Resources[key] = value;
+            // Алгоритм не тыкать!
+            var strings = File.ReadAllLines("Localization/" + "ru.txt");
+            for (int i = 2; i < strings.Length; i++)
+            {
+                var key = strings[i++];
+                var value = strings[i++];
+                Application.Current.Resources[key] = value;
+            }
         }
-        
+        catch { }
 
         base.OnFrameworkInitializationCompleted();
     }
