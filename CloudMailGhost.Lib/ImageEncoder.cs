@@ -1,5 +1,7 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Text;
 using SixLabors.ImageSharp.ColorSpaces;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CloudMailGhost.Lib
 {
@@ -19,7 +21,8 @@ namespace CloudMailGhost.Lib
         private static object pixelsReadyLock = new();
 
         /// <summary>
-        /// Соль - добавление к ключу для каждой картинки индивидуально
+        /// Соль - добавление к ключу для каждой картинки индивидуально.
+        /// Одинакова и для оригинала, и для результата!
         /// </summary>
         private static string GetSalt(ImageRepresenter original)
         {
@@ -38,20 +41,15 @@ namespace CloudMailGhost.Lib
         /// <exception cref="ArgumentException"></exception>
         public static ImageRepresenter EncodeDataV1(ImageRepresenter original, string key, byte[] data, Action<float> updateProgress)
         {
-            if (data.Length != original.Pixels.Length / Rarefaction) throw new ArgumentException();
+            if (data.Length + 16 != original.Pixels.Length / Rarefaction) throw new ArgumentException("data.Length + 16 != original.Pixels.Length / Rarefaction");
+            if (data.Length % 16 != 0) throw new ArgumentException("data.Length % 16 != 0");
 
-            data = data.Clone() as byte[];
+            byte[] IV = RandomNumberGenerator.GetBytes(16); // AES-256
 
             // Шифрование данных
-            var ceaserNoise = NoiseGenerator.GenerateNoise(key + GetSalt(original),
-                data.Length,
-                0,
-                255,
-                out int n);
-            for (int k = 0; k < data.Length; k++)
-            {
-                data[k] += ceaserNoise[k];
-            }
+            data = Сryptographer.Encode(data, key + GetSalt(original), IV);
+
+            data = [.. IV, ..data];
 
             // Из ключа шифрования получаем нужные числа
             var noise = NoiseGenerator.GenerateNoise(
@@ -321,17 +319,14 @@ namespace CloudMailGhost.Lib
                 decoded[i / Rarefaction] += (byte)DecodeEqualityV1(ref message.Pixels[i], noise[i], Jijka);
             }
 
-            var ceaserNoise = NoiseGenerator.GenerateNoise(key + GetSalt(message),
-                decoded.Length,
-                0,
-                255,
-                out int n);
+            var data = decoded.Skip(16).ToArray();
+            var IV   = decoded.Take(16).ToArray();
 
-            
-            for (int i = 0; i < decoded.Length; i++)
-            {
-                decoded[i] -= ceaserNoise[i];
-            }
+            // Шифрование данных
+            decoded = Сryptographer.Decode(
+                data,  // Данные начиная с 16 байта (первые 16 это IV)
+                key + GetSalt(message),      // Ключ шифрования
+                IV); // IV
 
             return decoded;
         }

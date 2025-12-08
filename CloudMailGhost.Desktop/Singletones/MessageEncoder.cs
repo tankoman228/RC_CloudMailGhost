@@ -18,7 +18,7 @@ namespace CloudMailGhost.Desktop.Singletones
         {
             var fake = ImageLoader.LoadImageFromFile(fileFake);
 
-            if (fake.Height * fake.Width % ImageEncoder.Rarefaction != 0) throw new ArgumentException("Число пикселей должно быть кратно " + ImageEncoder.Rarefaction);
+            if (fake.Height * fake.Width % 16 != 0) throw new ArgumentException("Число пикселей должно быть кратно 16");
 
             var fileBytes = File.ReadAllBytes(fileReal);
             var fileNameBytes = Encoding.UTF8.GetBytes(Path.GetFileName(fileReal));
@@ -31,12 +31,12 @@ namespace CloudMailGhost.Desktop.Singletones
                 ..fileBytes,
             ];
 
-            if (fake.Pixels.Length / ImageEncoder.Rarefaction - toWrite.Length < 0)
+            if (fake.Pixels.Length / ImageEncoder.Rarefaction - toWrite.Length < 16)
                 throw new Exception($"Нужно больше пикселей, этого файла хватит только ~ на {(float)fake.Pixels.Length / toWrite.Length / ImageEncoder.Rarefaction}%");
 
             toWrite = [
                 ..toWrite,
-                ..new byte[fake.Pixels.Length / ImageEncoder.Rarefaction - toWrite.Length]
+                ..new byte[fake.Pixels.Length / ImageEncoder.Rarefaction - toWrite.Length - 16]
             ];
 
             ImageRepresenter resImage = new();         
