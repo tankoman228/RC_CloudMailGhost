@@ -41,17 +41,17 @@
 			<DataGrid ItemsSource="{Binding Files}" AutoGenerateColumns="False">
 			    <DataGrid.Columns>
 				    <DataGridTextColumn 
-                        Header="Файл"
+                        Header="{DynamicResource File}"
                         Binding="{Binding DisplayName}"></DataGridTextColumn>
 				    <DataGridTextColumn 
-                        Header="Статус"
+                        Header="{DynamicResource Status}"
                         Binding="{Binding Status}"></DataGridTextColumn>
 				    <DataGridTextColumn 
-                        Header="Описание"
+                        Header="{DynamicResource Description}"
                         Binding="{Binding Description}"></DataGridTextColumn>
-                    <DataGridTemplateColumn Header="Действия">
+                    <DataGridTemplateColumn Header="{DynamicResource Actions}">
 					    <DataTemplate>
-						    <Button Command="{Binding OpenCommand}" Content="Открыть" />
+						    <Button Command="{Binding OpenCommand}" Content="{DynamicResource OpenFile}" />
                         </DataTemplate>
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>

@@ -5,11 +5,13 @@
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.Resources>
-        <!-- Определение ресурса шрифта. Используйте путь к файлу. -->
-        <!-- Alias (Псевдоним) "Inter" позволит вам легко ссылаться на него. -->
-        <FontFamily x:Key="AppFont">
-            avares://CloudMailGhost.Desktop/Assets/Fonts/arkhip_font.ttf#Arkhip
-        </FontFamily>
+        <ResourceDictionary>
+
+            <FontFamily x:Key="AppFont">
+                avares://CloudMailGhost.Desktop/Assets/Fonts/arkhip_font.ttf#Arkhip
+            </FontFamily>
+
+        </ResourceDictionary>
     </Application.Resources>
 
     <Application.Styles>

@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 
 using CloudMailGhost.Desktop.ViewModels;
 using CloudMailGhost.Desktop.Views;
+using System.IO;
 
 namespace CloudMailGhost.Desktop;
 
@@ -30,6 +31,16 @@ public partial class App : Application
                 DataContext = new MainViewModel()
             };
         }
+
+        // Алгоритм не тыкать!
+        var strings = File.ReadAllLines("Localization/" + "ru.txt");
+        for (int i = 2; i < strings.Length; i++)
+        {
+            var key = strings[i++];
+            var value = strings[i++];
+            Application.Current.Resources[key] = value;
+        }
+        
 
         base.OnFrameworkInitializationCompleted();
     }

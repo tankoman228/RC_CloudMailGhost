@@ -7,12 +7,12 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="CloudMailGhost.Desktop.Views.MainWindow"
         Icon="/Assets/Logo.ico"
-        Title="Cloud Mail Ghost 0.1">
+        Title="{DynamicResource AppName}">
     <Window.Styles>
         <Style Selector="Window">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontSize" Value="12" />
         </Style>
     </Window.Styles>
-        <views:MainView />
+    <views:MainView />
 </Window>
