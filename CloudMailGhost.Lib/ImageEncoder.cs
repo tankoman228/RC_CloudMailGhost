@@ -1,7 +1,4 @@
 ﻿using System.Security.Cryptography;
-using System.Text;
-using SixLabors.ImageSharp.ColorSpaces;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CloudMailGhost.Lib
 {
@@ -9,14 +6,14 @@ namespace CloudMailGhost.Lib
     {
         private static Random random = new Random();
 
-
-        public const int Rarefaction = 10;
-        public const int FragmentValueLimit = 255 / Rarefaction;
-        public const int JijkaMinValue = 30;
-        public const int ModFragmentKoef = (int)(FragmentValueLimit / 3 + 4);
-        public const int MinColorDifference = 20;
-        public const int MaxColorDifference = 50;
+        public const int Rarefaction = 10; // Не трогать, текущий алгоритм к нему крайне чувствителен!
+        public const int JijkaMinValue = 64;
+        public const int JijkaEntropy = 128;
         public const int RootsToExit = 30;
+        public const int NoiseMin = 2;
+        public const int NoiseMax = 4;
+        public const int MinColorDifference = 2;
+        public const int MaxColorDifference = 4;
 
         private static object pixelsReadyLock = new();
 
@@ -53,11 +50,18 @@ namespace CloudMailGhost.Lib
 
             // Из ключа шифрования получаем нужные числа
             var noise = NoiseGenerator.GenerateNoise(
-                $"{key}:{GetSalt(original)}", // в качестве соли: размер картинки
-                original.Pixels.Length,              // генерируем шум для картинки
-                8, 16, // лимиты значений в шуме
+                $"{key}:{GetSalt(original)}", // в качестве соли
+                original.Pixels.Length,       // генерируем шум для картинки
+                NoiseMin, NoiseMax,           // лимиты значений в шуме
                 out var JijkaRaw);
-            int Jijka = JijkaMinValue + JijkaRaw % 31;
+            int Jijka = JijkaMinValue + JijkaRaw % JijkaEntropy;
+
+            // Некодируемые пиксели. Номер первого некодируемого, номер второго вычисляется на основе
+            var uncodedNoise = NoiseGenerator.GenerateNoise(
+                $"{key}uwu{GetSalt(original)}",         // в качестве соли
+                original.Pixels.Length / Rarefaction,   // генерируем шум для пикселей, не несущих информацию
+                0, (byte)(Rarefaction - 1),             // лимиты значений в шуме
+                out var noneed);
 
             // Это у нас будет новая картинка (она размотана в линию)
             ImageRepresenter result = new ImageRepresenter { Pixels = (ImageRepresenter.Pixel[])original.Pixels.Clone() };
@@ -66,203 +70,100 @@ namespace CloudMailGhost.Lib
 
             void ParralelChunk(int pixelStart, int length)
             {
-                int i = pixelStart; // номер пикселя
-
-                while (i < length)
+                int max = pixelStart + length;  
+                for (int i = pixelStart; i < max; i++)
                 {
                     byte encoded = data[i / Rarefaction]; // пикселей на 1 байт
 
-                    // Разделяем, какие числа мы хотим закодировать
-                    int fragments = encoded / Rarefaction;
-                    int gragmentLast = encoded - fragments * (Rarefaction - 1); // целочисленное деление ест дроби
-                   
-                    // А далее решаем уравнение
-                    void SolveEqualityForFragment(int targetValue)
+                    void SolveEqualityForFragment(bool targetValue)
                     {
                         // Поиск ближайшего корня
                         var root = original.Pixels[i];
-                        var rgbStart = original.Pixels[i];
 
-                        byte r = rgbStart.R;
-                        byte g = rgbStart.G;
-                        byte b = rgbStart.B;
+                        bool resDecode = DecodeEqualityV1(ref root, noise[i], Jijka);
+                        if (resDecode == targetValue) return; // Корень уже какой надо                        
 
-                        bool skipG = true;
-                        bool skipR = random.Next() % 2 == 0;
-                        bool skipB = random.Next() % 2 == 0;
+                        byte R = root.R;
+                        byte G = root.G;
+                        byte B = root.B;
 
-                        int h = 0;
-                        int rootsFound = 0;
+                        int currentSum = (R + G + B + Jijka) % noise[i];
+                        byte currentMod = (byte)(currentSum % noise[i]);
 
-                        int minColorDifference = 0xFFFFFF;
-                        int res = -1;
-
-                        root = new(r, g, b);
-                        res = DecodeEqualityV1(ref root, noise[i], Jijka);
-
-                        while (
-                            rootsFound < RootsToExit &&
-                            minColorDifference > MinColorDifference
-                            || minColorDifference > MaxColorDifference)
+                        void SolveTowardsColor(ref byte R)
                         {
-                            var diff = Math.Abs(targetValue - res);
-                            if (diff == 0)
+                            // Меняем один из каналов, решая уравнение (R + G + B + Jijka) % noise == 0
+                            if (!targetValue)
                             {
-                                var cd = ColorSumDiff(ref root, ref original.Pixels[i]);
-                                if (cd < minColorDifference)
-                                {
-                                    minColorDifference = cd;
-                                    result.Pixels[i] = root;
-                                }
+                                if (root.R > 0) root.R--;
+                                else root.R++;
 
-                                rootsFound++;
-                                h = 99999;
+                                resDecode = DecodeEqualityV1(ref root, noise[i], Jijka);
+                                if (resDecode != targetValue) throw new Exception("пиздец 0" + i);
+
+                                result.Pixels[i] = root;
+                                return;
                             }
 
-                            h++;
-                            if (h > 25 || (!skipG && !skipR && !skipB))
+                            if (root.R > currentMod)
                             {
-                                r = (byte)random.Next();
-                                g = (byte)random.Next();
-                                b = (byte)random.Next();
+                                root.R -= currentMod;
+                                resDecode = DecodeEqualityV1(ref root, noise[i], Jijka);
 
-                                root = new(r, g, b);
-                                res = DecodeEqualityV1(ref root, noise[i], Jijka);
-
-                                h = 0;
+                                if (resDecode != targetValue) throw new Exception("пиздец A" + i);
                             }
                             else
                             {
-                                //Console.WriteLine($"\n{diff}:\t{r} {g} {b}");
-                            }
+                                root.R += (byte)(noise[i] - currentMod);
+                                resDecode = DecodeEqualityV1(ref root, noise[i], Jijka);
 
-                            skipG = random.Next() % 2 == 0;
-
-                            if (b > 0)
-                            {
-                                var newRoot = new ImageRepresenter.Pixel(r, g, --b);
-                                var newRes = DecodeEqualityV1(ref newRoot, noise[i], Jijka);
-                                var new_diff = Math.Abs(newRes - targetValue);
-
-                                if (new_diff >= diff) b++;
-                                else
-                                {
-                                    skipB = true;
-
-                                    root = newRoot;
-                                    res = newRes;
-
-                                    continue;
-                                }
-
-                            }
-
-                            if (!skipB && b < 255)
-                            {
-                                var newRoot = new ImageRepresenter.Pixel(r, g, ++b);
-                                var newRes = DecodeEqualityV1(ref newRoot, noise[i], Jijka);
-                                var new_diff = Math.Abs(newRes - targetValue);
-
-                                if (new_diff >= diff) b--;
-                                else
-                                {
-                                    skipB = true;
-
-                                    root = newRoot;
-                                    res = newRes;
-
-                                    continue;
-                                }
-                            }
-
-                            skipR = random.Next() % 2 == 0;
-
-                            if (r > 0)
-                            {
-                                var newRoot = new ImageRepresenter.Pixel(--r, g, b);
-                                var newRes = DecodeEqualityV1(ref newRoot, noise[i], Jijka);
-                                var new_diff = Math.Abs(newRes - targetValue);
-
-                                if (new_diff >= diff) r++;
-                                else
-                                {
-                                    skipR = true;
-
-                                    root = newRoot;
-                                    res = newRes;
-
-                                    continue;
-                                }
-
-                                if (new_diff == 0) continue;
-                            }
-
-                            if (!skipR && r < 255)
-                            {
-                                var newRoot = new ImageRepresenter.Pixel(++r, g, b);
-                                var newRes = DecodeEqualityV1(ref newRoot, noise[i], Jijka);
-                                var new_diff = Math.Abs(newRes - targetValue);
-
-                                if (new_diff >= diff) r--;
-                                else
-                                {
-                                    skipR = true;
-
-                                    root = newRoot;
-                                    res = newRes;
-
-                                    continue;
-                                }
-                            }
-
-
-                            skipB = random.Next() % 2 == 0;
-
-                            if (g > 0)
-                            {
-                                var newRoot = new ImageRepresenter.Pixel(r, --g, b);
-                                var newRes = DecodeEqualityV1(ref newRoot, noise[i], Jijka);
-                                var new_diff = Math.Abs(newRes - targetValue);
-
-                                if (new_diff >= diff) g++;
-                                else
-                                {
-                                    skipG = true;
-
-                                    root = newRoot;
-                                    res = newRes;
-
-                                    continue;
-                                }
-
-                            }
-
-                            if (!skipG && g < 255)
-                            {
-                                var newRoot = new ImageRepresenter.Pixel(r, ++g, b);
-                                var newRes = DecodeEqualityV1(ref newRoot, noise[i], Jijka);
-                                var new_diff = Math.Abs(newRes - targetValue);
-
-                                if (new_diff >= diff) g--;
-                                else
-                                {
-                                    skipG = true;
-
-                                    root = newRoot;
-                                    res = newRes;
-
-                                    continue;
-                                }
+                                if (resDecode != targetValue) throw new Exception($"{root.R}");
                             }
                         }
+
+                        switch (random.Next() % 3)
+                        {
+                            case 0:
+                            case 1:
+                            case 2:
+                                SolveTowardsColor(ref root.B); // Наивысший шанс, ибо синий видят хуже
+                                break;
+
+                            case 3:                              
+                            case 4:
+                                SolveTowardsColor(ref root.R);
+                                break;
+
+                            default:
+                                SolveTowardsColor(ref root.G);
+                                break;
+                        }
+
+                        result.Pixels[i] = root;
                     }
 
-                    for (int k = 0; k < Rarefaction - 1; k++)
+                    int uncodedId1 = uncodedNoise[i / Rarefaction];
+                    int uncodedId2 = uncodedNoise[i / Rarefaction] == (Rarefaction - 1) ? 0 : uncodedId1 + 1;
+                    int uncodedOffset = 0;
+
+                    // Зона пустого шума, тут байт не кодируется. Имитатор шума будет в будущих версиях, сейчас шум равномерный
+                    if (i % 10 == uncodedId1)
                     {
-                        SolveEqualityForFragment(fragments); i++;
+                        SolveEqualityForFragment(RandomNumberGenerator.GetBytes(1)[0] % 2 == 0);
+                        continue;
                     }
+                    else if (i % 10 > uncodedId1) uncodedOffset++;
 
-                    SolveEqualityForFragment(gragmentLast); i++;
+                    // Зона пустого шума 2 на основе 1. TODO: отвязать от плотности записи 10
+                    if (i % 10 == uncodedId2) 
+                    {
+                        SolveEqualityForFragment(RandomNumberGenerator.GetBytes(1)[0] % 2 == 0);
+                        continue;
+                    }
+                    else if (i % 10 > uncodedId2) uncodedOffset++;
+
+                    bool bit = BitHelper.GetBitFromByte(encoded, (i % 10) - uncodedOffset);
+                    SolveEqualityForFragment(bit);
 
                     // Теперь новый цвет пикселей содержит наши данные
                     lock (pixelsReadyLock)
@@ -271,15 +172,6 @@ namespace CloudMailGhost.Lib
                     }
                 }
             }
-
-            bool parallelIsGoing = true;
-            Task.Run(async () => {
-                while (parallelIsGoing)
-                {
-                    updateProgress(pixelsReady / (float)original.Pixels.Length * 100f);
-                    await Task.Delay(25);
-                }               
-            });
 
             int pixelsC = original.Pixels.Length;
             int ChunkSize = 0;
@@ -290,6 +182,14 @@ namespace CloudMailGhost.Lib
                 pixelsC -= Rarefaction * 8;
             }
 
+            bool parallelIsGoing = true;
+            Task.Run(async () => {
+                while (parallelIsGoing)
+                {
+                    updateProgress(pixelsReady / (float)original.Pixels.Length * 100f);
+                    await Task.Delay(25);
+                }
+            });
             Parallel.For(0, 8, i =>
             {
                 if (i < 7)  ParralelChunk(i * ChunkSize, ChunkSize);
@@ -305,18 +205,39 @@ namespace CloudMailGhost.Lib
         {
             // Из ключа шифрования восстанавилваем нужные числа
             var noise = NoiseGenerator.GenerateNoise(
-                $"{key}:{GetSalt(message)}", // в качестве соли: размер картинки
+                $"{key}:{GetSalt(message)}",      // в качестве соли: размер картинки
                 message.Pixels.Length,            // восстанавилваем шум для картинки
-                8, 16,                             // лимиты значений в шуме
+                NoiseMin, NoiseMax,               // лимиты значений в шуме
                 out var JijkaRaw);
-            int Jijka = JijkaMinValue + JijkaRaw % 31;
+            int Jijka = JijkaMinValue + JijkaRaw % JijkaEntropy;
+
+            // Некодируемые пиксели. Номер первого некодируемого, номер второго вычисляется на основе
+            var uncodedNoise = NoiseGenerator.GenerateNoise(
+                $"{key}uwu{GetSalt(message)}",        
+                message.Pixels.Length / Rarefaction,   // генерируем шум для пикселей, не несущих информацию
+                0, (byte)(Rarefaction - 1),            // лимиты значений в шуме
+                out var noneed);
 
             byte[] decoded = new byte[message.Pixels.Length / Rarefaction];
 
             // А далее используем уравнение
             for (int i = 0; i < message.Pixels.Length; i++)
             {
-                decoded[i / Rarefaction] += (byte)DecodeEqualityV1(ref message.Pixels[i], noise[i], Jijka);
+                int uncodedId1 = uncodedNoise[i / Rarefaction];
+                int uncodedId2 = uncodedNoise[i / Rarefaction] == (Rarefaction - 1) ? 0 : uncodedId1 + 1;
+                int uncodedOffset = 0;
+
+                // Зона пустого шума, тут байт не кодируется. Имитатор шума будет в будущих версиях, сейчас шум равномерный
+                if (i % 10 == uncodedId1) continue;               
+                else if (i % 10 > uncodedId1) uncodedOffset++;
+
+                // Зона пустого шума 2 на основе 1. TODO: отвязать от плотности записи 10
+                if (i % 10 == uncodedId2) continue;
+                else if (i % 10 > uncodedId2) uncodedOffset++;
+
+                bool bit = DecodeEqualityV1(ref message.Pixels[i], noise[i], Jijka);
+
+                BitHelper.SetBitInByte(ref decoded[i / Rarefaction], (i % 10 - uncodedOffset) , bit);
             }
 
             var data = decoded.Skip(16).ToArray();
@@ -332,29 +253,15 @@ namespace CloudMailGhost.Lib
         }
 
         /// <summary>
-        /// ключевая функция, уравнение шифрования
+        /// ключевая функция, уравнение шифрования. Бит
         /// </summary>
-        private static int DecodeEqualityV1(ref ImageRepresenter.Pixel original, byte noise, int Jijka)
+        private static bool DecodeEqualityV1(ref ImageRepresenter.Pixel original, byte noise, int Jijka)
         {
             byte R = original.R;
             byte G = original.G;
             byte B = original.B;
 
-            switch (noise % 8)
-            {
-                case 0: R += noise; G += noise; B -= noise; break;
-                case 1: R += noise; G -= noise; B += noise; break;
-                case 2: R += noise; G -= noise; B -= noise; break;
-                case 3: R -= noise; G += noise; B += noise; break;
-                case 4: R -= noise; G += noise; B -= noise; break;
-                case 5: R -= noise; G -= noise; B += noise; break;
-                case 6: R -= noise; G -= noise; B -= noise; break;
-                case 7: R += noise; G += noise; B += noise; break;
-            }
-
-            int Sum = R % ModFragmentKoef + G % ModFragmentKoef + B % ModFragmentKoef;           
-
-            return Sum % (Jijka + noise);
+            return (R + G + B + Jijka) % noise == 0;
         }
 
         public static int ColorSumDiff(ref ImageRepresenter.Pixel c1, ref ImageRepresenter.Pixel c2)

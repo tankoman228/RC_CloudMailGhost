@@ -178,10 +178,7 @@ public class MainViewModel : ViewModelBase
     {
         MainWindow.Instance.ShowMessage($"Константы шифрования: \n" +
             $"Rarefaction\t{CloudMailGhost.Lib.ImageEncoder.Rarefaction}\n" +
-            $"MaxColorDifference\t{CloudMailGhost.Lib.ImageEncoder.MaxColorDifference}\n" +
-            $"ModFragmentKoef\t{CloudMailGhost.Lib.ImageEncoder.ModFragmentKoef}\n" +
             $"JijkaMinValue\t{CloudMailGhost.Lib.ImageEncoder.JijkaMinValue}\n" +
-            $"MinColorDifference\t{CloudMailGhost.Lib.ImageEncoder.MinColorDifference}\n" +
             $"");
     }
 

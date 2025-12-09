@@ -15,7 +15,7 @@ namespace CloudMailGhost.Unit
         public void EncodeDecode_V1_ShouldWorkCorrectly()
         {
             string key = "PPLGOND";
-            byte[] testData = NoiseGenerator.GenerateNoise(new Random(0).Next() + "", 
+            byte[] testData = NoiseGenerator.GenerateNoise(new Random().Next() + "", 
                 ImageEncoder.Rarefaction * 32 * (new Random(0).Next(17) + 1), 0, 255, out var s);
 
             int pixelCount = (testData.Length + 16) * ImageEncoder.Rarefaction;
@@ -34,6 +34,7 @@ namespace CloudMailGhost.Unit
             var encodedImage = ImageEncoder.EncodeDataV1(originalImage, key, testData, d => { });
             var decodedData  = ImageEncoder.DecodeDataV1(encodedImage, key);
 
+            Console.WriteLine($"{testData[0]} == {testData[1]}");
             CollectionAssert.AreEqual(testData, decodedData);
 
             Console.WriteLine($"key: {key}");

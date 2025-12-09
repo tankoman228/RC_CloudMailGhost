@@ -16,9 +16,9 @@ namespace CloudMailGhost.Lib
 
         public struct Pixel
         {
-            public byte R;
-            public byte G;
-            public byte B;
+            public volatile byte R;
+            public volatile byte G;
+            public volatile byte B;
 
             public Pixel() { }
             public Pixel(byte R, byte G, byte B)
