@@ -121,7 +121,7 @@ namespace CloudMailGhost.Lib
                             }
                         }
 
-                        switch (random.Next() % 3)
+                        switch (random.Next() % 6)
                         {
                             case 0:
                             case 1:
