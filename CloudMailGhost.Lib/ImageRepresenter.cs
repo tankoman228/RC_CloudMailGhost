@@ -13,6 +13,7 @@ namespace CloudMailGhost.Lib
         public int Width { get; set; }
         public int Height { get; set; }
 
+        public int CapacityBytes => Pixels.Length / ImageEncoder.Rarefaction - 16;
 
         public struct Pixel
         {

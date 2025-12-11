@@ -64,7 +64,11 @@ namespace CloudMailGhost.Lib
                 out var noneed);
 
             // Это у нас будет новая картинка (она размотана в линию)
-            ImageRepresenter result = new ImageRepresenter { Pixels = (ImageRepresenter.Pixel[])original.Pixels.Clone() };
+            ImageRepresenter result = new ImageRepresenter { 
+                Pixels = (ImageRepresenter.Pixel[])original.Pixels.Clone(), 
+                Height = original.Height, 
+                Width = original.Width 
+            };
 
             int pixelsReady = 0;
 
@@ -149,7 +153,8 @@ namespace CloudMailGhost.Lib
                     // Зона пустого шума, тут байт не кодируется. Имитатор шума будет в будущих версиях, сейчас шум равномерный
                     if (i % 10 == uncodedId1)
                     {
-                        SolveEqualityForFragment(RandomNumberGenerator.GetBytes(1)[0] % 2 == 0);
+                        // Решил не забивать ничем, чтобы естественный шум просвечивал и оригинальные биты просачивались для масок... типа того, короче
+                        //SolveEqualityForFragment(RandomNumberGenerator.GetBytes(1)[0] % 2 == 0);
                         continue;
                     }
                     else if (i % 10 > uncodedId1) uncodedOffset++;
@@ -157,7 +162,7 @@ namespace CloudMailGhost.Lib
                     // Зона пустого шума 2 на основе 1. TODO: отвязать от плотности записи 10
                     if (i % 10 == uncodedId2) 
                     {
-                        SolveEqualityForFragment(RandomNumberGenerator.GetBytes(1)[0] % 2 == 0);
+                        //SolveEqualityForFragment(RandomNumberGenerator.GetBytes(1)[0] % 2 == 0);
                         continue;
                     }
                     else if (i % 10 > uncodedId2) uncodedOffset++;

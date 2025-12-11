@@ -82,7 +82,7 @@ namespace CloudMailGhost.Unit
             ImageRepresenter originalImage = LoadImageFromFile(imagePath);
 
             int pixelCount = originalImage.Pixels.Length;
-            int dataCapacity = pixelCount / ImageEncoder.Rarefaction - 16;
+            int dataCapacity = originalImage.CapacityBytes;
 
             byte[] testData = new byte[dataCapacity];
             Random random = new Random();
