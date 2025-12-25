@@ -18,6 +18,8 @@ namespace CloudMailGhost.Desktop.ViewModels;
 public class MainViewModel : ViewModelBase
 {
     public ObservableCollection<FileItemViewModel> Files { get; } = [];
+    public ObservableCollection<FakeItemViewModel> Fakes { get; } = [];
+
     public static MainViewModel Instance;
     public ICommand CommandSelectKey { get; }
     public ICommand CommandSelectIO { get; }
@@ -62,6 +64,9 @@ public class MainViewModel : ViewModelBase
         {
             Files.Clear();
             Files.AddRange(Directory.EnumerateFiles(Config.PathToIO).Where(x => x.EndsWith(".png")).Select(y => new FileItemViewModel(y)));
+
+            Fakes.Clear();
+            Fakes.AddRange(Directory.EnumerateFiles(Config.PathToFake).Where(x => x.EndsWith(".png")).Select(y => new FakeItemViewModel(y)));
         }
         catch (Exception ex) {}
     }
@@ -74,15 +79,15 @@ public class MainViewModel : ViewModelBase
         var storageProvider = _target.StorageProvider;
         var fileType = new FilePickerFileType("Text files")
         {
-            Patterns = new[] { "*.*" },
-            MimeTypes = new[] { "text/plain" }
+            Patterns = ["*.*"],
+            MimeTypes = ["text/plain"]
         };
 
         var options = new FilePickerOpenOptions
         {
             Title = "Выберите файл с ключом шифрования (до 2 КБ)",
             AllowMultiple = false,
-            FileTypeFilter = new[] { fileType }
+            FileTypeFilter = [fileType]
         };
 
         // Открываем диалог

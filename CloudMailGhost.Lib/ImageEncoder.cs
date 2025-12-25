@@ -38,8 +38,12 @@ namespace CloudMailGhost.Lib
         /// <exception cref="ArgumentException"></exception>
         public static ImageRepresenter EncodeDataV1(ImageRepresenter original, string key, byte[] data, Action<float> updateProgress)
         {
-            if (data.Length + 16 != original.Pixels.Length / Rarefaction) throw new ArgumentException("data.Length + 16 != original.Pixels.Length / Rarefaction");
-            if (data.Length % 16 != 0) throw new ArgumentException("data.Length % 16 != 0");
+            if (data.Length > original.CapacityBytes) throw new ArgumentException("недостаточно места");
+            if (original.Pixels.Length % 16 != 0) throw new ArgumentException("Число пикселей не кратно 16");
+
+            // Теперь надо эти данные привести к размеру original.CapacityBytes и чтобы data.Length была кратна 16
+            data = [..data, ..(new byte[original.CapacityBytes - data.Length])];
+
 
             byte[] IV = RandomNumberGenerator.GetBytes(16); // AES-256
 
@@ -223,7 +227,7 @@ namespace CloudMailGhost.Lib
                 0, (byte)(Rarefaction - 1),            // лимиты значений в шуме
                 out var noneed);
 
-            byte[] decoded = new byte[message.Pixels.Length / Rarefaction];
+            byte[] decoded = new byte[message.CapacityBytes + 16];
 
             // А далее используем уравнение
             for (int i = 0; i < message.Pixels.Length; i++)

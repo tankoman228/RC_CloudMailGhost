@@ -34,11 +34,6 @@ namespace CloudMailGhost.Desktop.Singletones
             if (fake.Pixels.Length / ImageEncoder.Rarefaction - toWrite.Length < 16)
                 throw new Exception($"Нужно больше пикселей, этого файла хватит только ~ на {(float)fake.Pixels.Length / toWrite.Length / ImageEncoder.Rarefaction}%");
 
-            toWrite = [
-                ..toWrite,
-                ..new byte[fake.Pixels.Length / ImageEncoder.Rarefaction - toWrite.Length - 16]
-            ];
-
             ImageRepresenter resImage = new();         
             await Task.Run(() => {
                 resImage = ImageEncoder.EncodeDataV1(fake, Config.Key, toWrite, progress => MainViewModel.Instance.Progress = progress);

@@ -29,3 +29,9 @@ Actions
 
 OpenFile
 Открыть файл
+
+SizeBytesData
+Вместимость (байт)
+
+CommentToFile
+Комментарий

@@ -49,17 +49,17 @@
                 </Grid>
 
                 <Border Grid.Row="2" Margin="15" BorderThickness="3" BorderBrush="White">
-			        <DataGrid ItemsSource="{Binding Files}" AutoGenerateColumns="False">
+			        <DataGrid ItemsSource="{Binding Files, Mode=OneWay}" AutoGenerateColumns="False">
 			            <DataGrid.Columns>
 				            <DataGridTextColumn 
                                 Header="{DynamicResource File}"
-                                Binding="{Binding DisplayName}"></DataGridTextColumn>
+                                Binding="{Binding DisplayName, Mode=OneWay}"></DataGridTextColumn>
 				            <DataGridTextColumn 
                                 Header="{DynamicResource Status}"
-                                Binding="{Binding Status}"></DataGridTextColumn>
+                                Binding="{Binding Status, Mode=OneWay}"></DataGridTextColumn>
 				            <DataGridTextColumn 
                                 Header="{DynamicResource Description}"
-                                Binding="{Binding Description}"></DataGridTextColumn>
+                                Binding="{Binding Description, Mode=OneWay}"></DataGridTextColumn>
                             <DataGridTemplateColumn Header="{DynamicResource Actions}">
 					            <DataTemplate>
 						            <Button Command="{Binding OpenCommand}" Content="{DynamicResource OpenFile}" />
@@ -77,10 +77,27 @@
                 </ProgressBar>
             </Grid>
        </TabItem>
-       <TabItem Header="Отправка и маскировка">
-		   <Label>TODO:</Label>
+       <TabItem Header="Маскировка" FontFamily="{StaticResource AppFont}" >
+           <Grid RowDefinitions="auto,*">
+			   <Label>Файлы-топливо, в которые можно прятать данные (директория с фейками)</Label>
+			    <DataGrid ItemsSource="{Binding Fakes, Mode=OneWay}" AutoGenerateColumns="False" Grid.Row="1">
+			        <DataGrid.Columns>
+				        <DataGridTextColumn 
+                            Header="{DynamicResource File}"
+                            Binding="{Binding DisplayName, Mode=OneWay}"></DataGridTextColumn>
+				        <DataGridTextColumn 
+                            Header="{DynamicResource SizeBytesData}"
+                            Binding="{Binding DisplayDataMaxSize, Mode=OneWay}"></DataGridTextColumn>
+
+                        <DataGridTextColumn 
+                            Header="{DynamicResource CommentToFile}"
+                            Binding="{Binding StatusText, Mode=OneWay}"></DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+           </Grid>
+		   
        </TabItem>
-        <TabItem Header="Настройки">
+        <TabItem Header="Настройки" FontFamily="{StaticResource AppFont}" >
 		   <Label>TODO:</Label>
        </TabItem>
    </TabControl>

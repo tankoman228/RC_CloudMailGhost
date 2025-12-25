@@ -47,7 +47,7 @@ namespace CloudMailGhost.Desktop.ViewModels
                 nameSplit = nameSplit[nameSplit.Length - 1].Split('/');
                 DisplayName = nameSplit[nameSplit.Length - 1];
 
-                Status = "Скачан";
+                Status = "Расшифрован";
             }
             else
             {
