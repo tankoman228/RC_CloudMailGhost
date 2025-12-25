@@ -103,8 +103,8 @@ namespace CloudMailGhost.Lib
                             // Меняем один из каналов, решая уравнение (R + G + B + Jijka) % noise == 0
                             if (!targetValue)
                             {
-                                if (root.R > 0) root.R--;
-                                else root.R++;
+                                if (R > 0) R--;
+                                else R++;
 
                                 resDecode = DecodeEqualityV1(ref root, noise[i], Jijka);
                                 if (resDecode != targetValue) throw new Exception("пиздец 0" + i);
@@ -113,16 +113,16 @@ namespace CloudMailGhost.Lib
                                 return;
                             }
 
-                            if (root.R > currentMod)
+                            if (R > currentMod)
                             {
-                                root.R -= currentMod;
+                                R -= currentMod;
                                 resDecode = DecodeEqualityV1(ref root, noise[i], Jijka);
 
                                 if (resDecode != targetValue) throw new Exception("пиздец A" + i);
                             }
                             else
                             {
-                                root.R += (byte)(noise[i] - currentMod);
+                                R += (byte)(noise[i] - currentMod);
                                 resDecode = DecodeEqualityV1(ref root, noise[i], Jijka);
 
                                 if (resDecode != targetValue) throw new Exception($"{root.R}");

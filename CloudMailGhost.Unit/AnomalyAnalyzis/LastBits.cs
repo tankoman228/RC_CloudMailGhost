@@ -6,6 +6,8 @@ namespace CloudMailGhost.Unit.AnomalyAnalyzis
     [TestClass]
     public class LastBits
     {
+        const int BIT_TO_VISUALIZE = 0;
+
         [TestMethod]
         public void LastBitsDifference()
         {
@@ -39,6 +41,10 @@ namespace CloudMailGhost.Unit.AnomalyAnalyzis
                 {
                     Console.WriteLine($"{key}:\t\t\t{((statsAfter[key] - statsBefore[key]) / statsBefore[key] * 100f).ToString("F2")}% change");
                 }
+
+                // Генерируем и сохраняем побитовые маски
+                string fileName = Path.GetFileNameWithoutExtension(imageFile);
+                SaveBitMaskComparison(image, img2, fileName);
             }
         }
 
@@ -92,6 +98,65 @@ namespace CloudMailGhost.Unit.AnomalyAnalyzis
             if (a3 != b3) sum++;
 
             return sum;
+        }
+
+        /// <summary>
+        /// Создает и сохраняет изображение с побитовыми масками для сравнения
+        /// </summary>
+        private void SaveBitMaskComparison(ImageRepresenter original, ImageRepresenter encoded, string baseName)
+        {
+            // Создаем изображение, которое будет содержать обе маски (оригинал слева, измененное справа)
+            int combinedWidth = original.Width * 2; // Ширина в два раза больше
+            int height = original.Height;
+
+            // Создаем массив пикселей для объединенного изображения
+            Pixel[] combinedPixels = new Pixel[combinedWidth * height];
+
+            // Заполняем левую половину (оригинал)
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < original.Width; x++)
+                {
+                    var originalPixel = original.Pixels[y * original.Width + x];
+                    combinedPixels[y * combinedWidth + x] = CreateBitMaskPixel(originalPixel);
+                }
+            }
+
+            // Заполняем правую половину (измененное)
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < encoded.Width; x++)
+                {
+                    var encodedPixel = encoded.Pixels[y * encoded.Width + x];
+                    combinedPixels[y * combinedWidth + original.Width + x] = CreateBitMaskPixel(encodedPixel);
+                }
+            }
+
+            // Создаем ImageRepresenter для объединенного изображения
+            var combinedImage = new ImageRepresenter
+            {
+                Width = combinedWidth,
+                Height = height,
+                Pixels = combinedPixels
+            };
+
+            // Сохраняем в файл
+            string outputPath = Path.Combine("Out", $"{baseName}_bit{BIT_TO_VISUALIZE}_mask.png");
+            ImageLoader.SaveImageToFile(combinedImage, outputPath);
+            Console.WriteLine($"Saved bit mask to: {outputPath}");
+        }
+
+        /// <summary>
+        /// Создает пиксель для побитовой маски (черный для 0, белый для 1)
+        /// </summary>
+        private Pixel CreateBitMaskPixel(Pixel sourcePixel)
+        {
+            return new Pixel
+            {
+                R = (byte)(BitHelper.GetBitFromByte(sourcePixel.R, BIT_TO_VISUALIZE) ? 255 : 0),
+                G = (byte)(BitHelper.GetBitFromByte(sourcePixel.G, BIT_TO_VISUALIZE) ? 255 : 0),
+                B = (byte)(BitHelper.GetBitFromByte(sourcePixel.B, BIT_TO_VISUALIZE) ? 255 : 0),
+            };
         }
     }
 }
